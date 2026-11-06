@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-store, max-age=0, must-revalidate" />
+    <meta name="theme-color" content="#8fac88" />
+    <title>FANG FOR FUTURE</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mitr:wght@400;500;600;700&display=swap" />
+    <style>
+      :root { --sage:#8fac88; --green:#4b7e68; --wine:#681d1e; --cream:#fffcf0; --sand:#f9ecd7; --sand-2:#f2e2c8; --ink:#171914; --muted:#72736c; --rule:#e5dcc6; --gold:#d7ad4a; }
+      :root { --font-thai:"Mitr","Noto Sans Thai",Tahoma,sans-serif; --font-display:"Mitr","Noto Sans Thai",Tahoma,sans-serif; }
+      * { box-sizing:border-box; }
+      body { min-height:100vh; margin:0; display:grid; place-items:center; background:linear-gradient(135deg,#d5d8d1,#c3c8c1); color:var(--ink); font-family:"Leelawadee UI","Noto Sans Thai",Tahoma,sans-serif; }
+      button,input { font:inherit; } button { border:0; cursor:pointer; color:inherit; } button:focus { outline:0; }
+      .phone { position:relative; width:min(100vw,430px); height:min(100vh,850px); overflow:hidden; background:var(--cream); border-radius:34px 34px 0 0; box-shadow:0 20px 50px #52615533; }
+      .page { display:none; height:100%; min-height:100%; overflow-y:auto; padding-bottom:92px; background:var(--cream); scrollbar-width:none; } .page::-webkit-scrollbar { display:none; } .page.active { display:block; }
+      .status { height:72px; display:flex; align-items:flex-end; justify-content:space-between; padding:0 28px 17px; background:var(--sage); font-size:19px; font-weight:800; letter-spacing:.4px; }
+      .status-icons { display:flex; align-items:center; gap:11px; } .status-icons img { width:20px; max-height:21px; object-fit:contain; } .status-icons img:last-child { width:29px; }
+      .brand-logo { width:59px; height:59px; object-fit:contain; flex:none; }
+      .nav { position:absolute; z-index:10; inset:auto 0 0; height:88px; padding:8px 20px 12px; display:flex; align-items:center; justify-content:space-between; background:var(--sage); } .nav.hidden { display:none; }
+      .nav button { position:relative; width:102px; height:55px; display:grid; place-items:center; align-content:center; gap:2px; background:transparent; border-radius:14px; font:18px Georgia,serif; } .nav button:nth-child(2) { position:absolute; left:50%; transform:translateX(-50%); } .nav button > img { width:25px; height:25px; object-fit:contain; filter:brightness(0); } .nav button.active { background:var(--wine); color:white; font-weight:700; } .nav button.active > img { filter:brightness(0) invert(1); } .nav-icon-stack { width:25px; height:25px; display:grid; place-items:center; } .nav-icon-stack img { grid-area:1 / 1; max-width:25px; max-height:25px; object-fit:contain; } .nav-icon-white { display:none; } .nav button.active .nav-icon-black { display:none; } .nav button.active .nav-icon-white { display:block; }
+      .page-header { min-height:82px; display:flex; align-items:center; gap:13px; padding:11px 25px; background:#fffdf4; border-bottom:1px solid #eee5d0; } .page-header h1 { margin:0; font:700 36px Georgia,serif; letter-spacing:-1px; } .menu { width:33px; height:25px; margin-left:auto; display:grid; align-content:space-between; } .menu span { height:5px; border-radius:5px; background:#111; }
+
+      /* Register */
+      .register { padding-bottom:0; background:#fffdf2; } .register .status { height:76px; } .register-head { padding:32px 31px 15px; text-align:center; } .register-head h1 { margin:0; font:700 47px Georgia,serif; }
+      .form { padding:0 30px 26px; } .form h2 { margin:6px 0 8px; font-size:22px; } .form h2.land { margin-top:25px; } .form-row { display:flex; gap:10px; } .field { width:100%; height:45px; min-width:0; margin:5px 0; padding:0 13px; border:0; border-radius:11px; background:#e2e2e2; color:#5e615f; font-size:15px; font-weight:700; outline:2px solid transparent; } .field:focus { outline-color:#b9d1b5; } .field::placeholder { color:#737575; } .form-row > .field, .form-row > .field-wrap { width:50%; } .field-wrap { position:relative; display:block; width:100%; margin:5px 0; } .field-wrap .field { margin:0; } .field-wrap.has-icon .field { padding-left:43px; } .field-wrap img { position:absolute; z-index:1; top:50%; left:13px; width:22px; height:22px; object-fit:contain; opacity:.6; transform:translateY(-50%); pointer-events:none; } .select { position:relative; flex:1; } .select::after { content:""; position:absolute; top:18px; right:15px; width:10px; height:10px; border-right:2px solid #222; border-bottom:2px solid #222; transform:rotate(45deg); pointer-events:none; } .login-link { display:block; width:max-content; margin:4px 0 12px auto; color:#b45d42; text-decoration:underline; font-size:15px; } .upload { height:135px; display:grid; place-items:center; margin-top:9px; border:1px dashed #86908a; border-radius:11px; background:#fff; color:#747775; text-align:center; font-size:14px; font-weight:700; } .upload img { display:block; width:38px; margin:8px auto; } .submit { width:100%; height:52px; margin-top:24px; border-radius:26px; background:var(--green); color:#fff; font-size:20px; font-weight:800; }
+
+      /* Home */
+      .hero { height:150px; overflow:hidden; } .hero img { width:100%; height:100%; object-fit:cover; } .home-content { padding:17px 26px 16px; } .greeting { margin-bottom:17px; } .greeting h2 { margin:0; font-size:23px; line-height:1.15; } .greeting p { margin:3px 0 0; font-size:15px; color:var(--ink); } .greeting .ton { display:none; }
+      .quick-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; } .quick { height:132px; padding:14px 12px; display:grid; place-items:center; align-content:center; gap:11px; text-align:center; border:0; border-radius:23px; background:#fdf9f0; box-shadow:0 5px 5px #38372a2f; } .quick:nth-child(1),.quick:nth-child(4) { background:#f5e2c7; } .quick img { width:48px; height:48px; object-fit:contain; } .quick span { font-size:16px; font-weight:500; }
+      .overview { margin-top:22px; padding:16px 16px 13px; border:0; border-radius:21px; background:#fffdfa; box-shadow:0 5px 8px #38372a2e; } .overview-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; padding-bottom:11px; border-bottom:1px solid #ded7c9; } .overview-kicker { margin:0 0 2px; color:#61765d; font-size:10px; font-weight:900; letter-spacing:.7px; } .overview h3 { margin:0; font-size:19px; line-height:1.2; } .overview-head small { flex:none; margin-top:3px; padding:4px 7px; border-radius:99px; background:#edf2e7; color:#56704f; font-size:10px; font-weight:900; } .credit-summary { display:flex; align-items:end; justify-content:space-between; gap:12px; padding:12px 1px 8px; } .credit-summary span { display:block; color:#777269; font-size:11px; font-weight:700; } .credit-summary strong { display:block; margin-top:1px; color:#355f50; font-size:31px; line-height:1; letter-spacing:-1px; } .credit-summary strong em { margin-left:3px; color:#5f6d5c; font-size:13px; font-style:normal; letter-spacing:0; } .credit-growth { margin-bottom:2px; padding:7px 8px; border-radius:10px; background:#f4e6c8; color:#6d5733; font-size:11px; font-weight:800; text-align:right; } .credit-growth b { display:block; color:#466a52; font-size:15px; line-height:1.1; } .credit-legend { display:flex; flex-wrap:wrap; gap:10px; padding:4px 1px 8px; color:#6f7068; font-size:10px; font-weight:700; } .credit-legend span { display:flex; align-items:center; gap:4px; } .credit-legend i { display:inline-block; width:10px; height:10px; border-radius:2px; background:#c9bc94; } .credit-legend i.line { width:14px; height:2px; border-radius:99px; background:#507562; box-shadow:4px 0 0 -1px #507562; } .credit-chart { display:block; width:100%; height:auto; overflow:visible; } .credit-chart .grid { stroke:#e9e1d1; stroke-width:1; } .credit-chart .axis-label { fill:#8a877f; font:700 9px "Leelawadee UI","Noto Sans Thai",Tahoma,sans-serif; } .credit-chart .year { fill:#5e625b; font:800 10px "Leelawadee UI","Noto Sans Thai",Tahoma,sans-serif; } .credit-chart .bar-value { fill:#7b6e50; font:900 10px "Leelawadee UI","Noto Sans Thai",Tahoma,sans-serif; } .credit-chart .total-value { fill:#456b58; font:900 10px "Leelawadee UI","Noto Sans Thai",Tahoma,sans-serif; } .credit-note { margin:9px 0 0; padding-top:9px; border-top:1px solid #e6dfd2; color:#77766f; font-size:10px; line-height:1.4; }
+
+      /* Expert assistant */
+      .expert-header h1,.plan-header h1 { font-size:31px; } .expert-content,.plan-content { padding:18px 20px 24px; } .expert-intro { display:grid; grid-template-columns:64px minmax(0,1fr); gap:12px; align-items:center; padding:14px; border-radius:18px; background:#f2e1c5; box-shadow:0 4px 7px #40392824; } .expert-intro img { width:53px; height:53px; object-fit:contain; } .expert-eyebrow { margin:0 0 2px; color:#5c755b; font-size:10px; font-weight:900; letter-spacing:.7px; } .expert-intro h2 { margin:0; font-size:19px; } .expert-intro p:last-child { margin:3px 0 0; color:#575a53; font-size:12px; line-height:1.35; } .expert-topic-label { margin:17px 0 8px; font-size:15px; font-weight:800; } .expert-topics { display:flex; flex-wrap:wrap; gap:7px; } .expert-topic { min-height:33px; padding:6px 10px; border:1px solid #d8c7a5; border-radius:999px; background:#fffdf4; color:#4a5746; font-size:12px; font-weight:800; } .expert-topic:disabled { cursor:wait; opacity:.55; } .chat-panel { margin-top:16px; overflow:hidden; border:1px solid #e0d9cb; border-radius:19px; background:#fffefa; box-shadow:0 4px 7px #4039281e; } .chat-panel-head { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:11px 13px; border-bottom:1px solid #e6decf; } .chat-panel-head b { font-size:15px; } .chat-panel-head span { padding:4px 7px; border-radius:99px; background:#e3efdd; color:#3f7049; font-size:10px; font-weight:900; } .chat-thread { display:grid; gap:9px; max-height:235px; overflow-y:auto; padding:12px; background:linear-gradient(135deg,#fffcf5,#f7f3e8); } .chat-message { max-width:87%; padding:9px 11px; border-radius:13px 13px 13px 3px; background:#eef0e5; color:#343831; font-size:13px; line-height:1.42; box-shadow:0 1px 2px #40392812; } .chat-message.user { justify-self:end; border-radius:13px 13px 3px 13px; background:#4b7e68; color:#fff; } .chat-message.pending { color:#66705e; font-style:italic; } .chat-compose { display:grid; grid-template-columns:minmax(0,1fr) 54px; gap:8px; padding:10px; border-top:1px solid #e6decf; background:#fffefa; } .chat-compose input { width:100%; min-width:0; height:39px; padding:0 11px; border:1px solid #d9d0bd; border-radius:10px; background:#fff; color:#30352f; font:13px "Leelawadee UI","Noto Sans Thai",Tahoma,sans-serif; outline:0; } .chat-compose input:focus { border-color:#719070; box-shadow:0 0 0 2px #cfe0ca; } .chat-compose button { border-radius:10px; background:var(--green); color:#fff; font-size:13px; font-weight:800; } .chat-compose button:disabled { cursor:wait; opacity:.65; }
+
+      /* Development plan */
+      .plan-lead { position:relative; overflow:hidden; padding:17px 17px 15px; border-radius:20px; background:#eef0df; box-shadow:0 4px 7px #40392822; } .plan-lead:after { content:""; position:absolute; right:-29px; bottom:-36px; width:128px; height:128px; border:20px solid #d6dfc2; border-radius:50%; } .plan-overline { position:relative; z-index:1; margin:0; color:#557052; font-size:11px; font-weight:900; letter-spacing:.7px; } .plan-lead h2 { position:relative; z-index:1; margin:3px 0 2px; font:700 27px Georgia,serif; } .plan-lead p:not(.plan-overline) { position:relative; z-index:1; margin:0; color:#555d51; font-size:13px; font-weight:700; } .plan-stage { position:relative; z-index:1; display:inline-block; margin-top:12px; padding:6px 9px; border-radius:8px; background:#4b7e68; color:#fff; font-size:11px; font-weight:800; } .plan-metrics { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:13px; } .plan-metric { padding:10px 8px; border-radius:12px; background:#f9ead0; text-align:center; box-shadow:0 3px 5px #40392818; } .plan-metric small { display:block; color:#655c4f; font-size:10px; font-weight:700; } .plan-metric b { display:block; margin-top:3px; font-size:18px; } .plan-section-title { display:flex; align-items:baseline; justify-content:space-between; gap:9px; margin:20px 0 9px; } .plan-section-title h3 { margin:0; font-size:20px; } .plan-section-title small { color:#687062; font-size:10px; font-weight:700; text-align:right; } .plan-timeline { display:grid; gap:0; padding:2px 0; } .plan-step { position:relative; display:grid; grid-template-columns:25px minmax(0,1fr); gap:10px; padding:0 0 14px; } .plan-step:not(:last-child):before { content:""; position:absolute; top:25px; bottom:-2px; left:11px; border-left:2px solid #c3cdb6; } .plan-step-mark { position:relative; z-index:1; width:24px; height:24px; display:grid; place-items:center; border:2px solid #b7c6af; border-radius:50%; background:#fffdf4; color:#5a7255; font-size:11px; font-weight:900; } .plan-step.current .plan-step-mark { border-color:#b58a40; background:#dfb248; color:#fff; } .plan-step.next .plan-step-mark { background:#e6efdf; } .plan-step-card { padding:10px 11px; border:1px solid #e4d9c5; border-radius:12px; background:#fffefa; } .plan-step-card b { display:block; font-size:14px; } .plan-step-card p { margin:3px 0 0; color:#606058; font-size:12px; line-height:1.35; } .plan-step-card small { display:block; margin-top:4px; color:#60745b; font-size:10px; font-weight:800; } .plan-recommendation { margin-top:4px; padding:13px; border-radius:15px; background:#f5e2c7; } .plan-recommendation h3 { margin:0; font-size:16px; } .plan-recommendation p { margin:4px 0 0; color:#5e594f; font-size:12px; line-height:1.4; } .plan-actions { display:grid; grid-template-columns:1fr 1fr; gap:9px; margin-top:13px; } .plan-actions button { min-height:42px; border-radius:10px; background:#fffdf7; border:1px solid #c5d0ba; color:#3f6142; font-size:12px; font-weight:800; } .plan-actions button:last-child { border-color:#b58a40; background:#b58a40; color:#fff; }
+
+      /* GPS */
+      .gps-banner { min-height:84px; padding:11px 25px; display:flex; align-items:center; gap:14px; background:#fbf5cd; } .gps-banner h1 { margin:0; font:700 45px Georgia,serif; } .run { margin-left:auto; padding:11px 12px; border-radius:10px; background:#eee3b8; font-size:15px; font-weight:800; box-shadow:0 3px 5px #695d3322; }
+      .route-map { height:270px; margin:20px 25px 16px; position:relative; overflow:hidden; border-radius:19px; background:repeating-linear-gradient(28deg,#e8e4d8 0 12px,#d6d2c4 13px 15px),repeating-linear-gradient(118deg,transparent 0 28px,#f7f5eb 29px 33px); } .route-map:before { content:""; position:absolute; inset:35px 38px 54px; border:4px dashed #51724f; border-radius:30% 47% 30% 45%; transform:rotate(9deg); } .route-map:after { content:""; position:absolute; inset:0; background:linear-gradient(35deg,transparent 40%,#a8d5da88 41% 55%,transparent 56%); } .pin { position:absolute; z-index:1; width:39px; height:39px; display:grid; place-items:center; border-radius:50% 50% 50% 0; background:#4c7d4e; color:white; font:700 20px Georgia,serif; transform:rotate(-45deg); } .pin b { transform:rotate(45deg); } .pin.a { top:76px; left:63px; } .pin.b { top:137px; right:47px; background:#cf6542; } .pin.c { bottom:51px; left:44%; } .map-chip { position:absolute; z-index:2; padding:5px 9px; border-radius:8px; background:#fffdf1; box-shadow:0 2px 7px #3f4e3e33; font-size:13px; font-weight:700; } .map-chip.one { top:119px; left:92px; } .map-chip.two { top:177px; right:28px; } .map-chip.three { bottom:24px; left:51px; }
+      .pickup { position:relative; padding:28px 48px 27px; background:#f0e2bf; border-radius:34px 34px 0 0; } .pickup:before { content:""; position:absolute; top:105px; bottom:40px; left:80px; border-left:2px dashed #a1a5a3; } .pickup h2 { margin:0 0 23px; font-size:25px; } .stop { position:relative; z-index:1; display:grid; grid-template-columns:39px 1fr auto; gap:13px; align-items:center; min-height:94px; margin:15px 0; padding:12px 13px; border:0; border-radius:13px; background:#fffcf7; box-shadow:0 5px 5px #463f322d; } .stop-number { width:37px; height:37px; display:grid; place-items:center; border-radius:5px; background:#578777; color:white; font-size:22px; font-weight:800; } .stop:nth-of-type(2) .stop-number { background:#b84648; } .stop strong { align-self:start; font-size:25px; } .stop p { margin:0; font-size:20px; font-weight:700; } .stop small { display:block; margin-top:5px; color:#231d1a; font-size:15px; font-weight:500; } .distance:before { content:""; display:inline-block; width:13px; height:13px; margin-right:6px; border-radius:50% 50% 50% 0; background:#cf3738; transform:rotate(-45deg); } .state { display:block; width:max-content; margin-top:6px; padding:3px 9px; border-radius:5px; background:#d8efd3; color:#3e714a; font-size:13px; font-weight:800; }
+
+      /* Field measurement and emissions estimate */
+      .inform-content { padding:22px 20px 22px; } .report-title { margin:0; font:700 34px Georgia,serif; letter-spacing:-.6px; } .report-kicker { display:flex; align-items:center; gap:7px; margin:5px 0 15px; color:#596b58; font-size:13px; font-weight:800; } .report-kicker:before { content:""; width:8px; height:8px; border-radius:50%; background:var(--green); }
+      .field-map-wrap { overflow:hidden; border:3px solid #30372c; border-radius:22px; background:#d7decf; box-shadow:0 4px 8px #423d2b29; } #field-map { height:268px; width:100%; } .leaflet-control-attribution { max-width:72%; overflow:hidden; font-size:9px!important; white-space:nowrap; text-overflow:ellipsis; } .leaflet-container { font-family:"Leelawadee UI","Noto Sans Thai",Tahoma,sans-serif; } .field-marker { width:24px; height:24px; display:grid; place-items:center; border:3px solid #fffdf2; border-radius:50% 50% 50% 0; background:var(--wine); box-shadow:0 2px 5px #33241766; color:#fff; font-size:11px; font-weight:800; transform:rotate(-45deg); } .field-marker span { transform:rotate(45deg); }
+      .map-caption { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:9px 11px; background:#e7efd9; color:#435840; font-size:12px; font-weight:800; } .map-caption span:last-child { color:#6c5c42; text-align:right; font-size:11px; }
+      .map-tools { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin:12px 0 15px; } .map-tools button { min-height:39px; padding:5px 8px; border:1px solid #cfc6ac; border-radius:10px; background:#fffdf5; color:#303b2d; font-size:12px; font-weight:800; } .map-tools button:first-child { border-color:var(--green); background:var(--green); color:#fff; }
+      .area-summary { display:grid; grid-template-columns:1.05fr .95fr; gap:0; overflow:hidden; border-radius:17px; background:#f6e7cc; box-shadow:0 4px 7px #4039282b; } .area-main { padding:15px 16px; border-right:1px solid #dfcda9; } .area-main small,.metric small { display:block; color:#625d50; font-size:12px; font-weight:700; } .area-main strong { display:block; margin-top:3px; font-size:34px; line-height:1; } .area-main em { margin-left:4px; color:#534f42; font-size:16px; font-style:normal; } .area-side { display:grid; grid-template-columns:1fr; } .metric { display:flex; align-items:center; justify-content:space-between; padding:9px 13px; border-bottom:1px solid #dfcda9; } .metric:last-child { border-bottom:0; } .metric b { font-size:15px; }
+      .satellite-card { margin-top:16px; padding:16px; border-radius:18px; background:#eef0df; box-shadow:0 4px 7px #40392822; } .satellite-head { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; } .satellite-overline { margin:0 0 2px; color:#5e7257; font-size:10px; font-weight:900; letter-spacing:.8px; } .satellite-head h2 { margin:0; font-size:19px; } .refresh-satellite { min-width:66px; height:33px; border:1px solid #4b7e68; border-radius:9px; background:#fffef8; color:#3e6d5b; font-size:11px; font-weight:800; } .refresh-satellite:disabled { opacity:.65; cursor:progress; } .satellite-status { min-height:17px; margin:5px 0 11px; color:#586055; font-size:11px; font-weight:700; } .satellite-status.ready { color:#3f7258; } .satellite-status.error { color:#a34c40; }
+      .satellite-sources { display:grid; gap:8px; } .satellite-source { display:grid; grid-template-columns:36px minmax(0,1fr); gap:9px; align-items:center; padding:10px; border:1px solid #d3dac9; border-radius:12px; background:#fffdf7; } .satellite-badge { width:36px; height:36px; display:grid; place-items:center; border-radius:50%; background:#d6ad59; color:#fff; font:700 13px Georgia,serif; } .satellite-source:nth-child(2) .satellite-badge { background:#718a69; } .satellite-source b { display:block; font-size:13px; } .satellite-source small { display:block; margin-top:2px; overflow:hidden; color:#64665f; font-size:11px; text-overflow:ellipsis; white-space:nowrap; }
+      .sensing-flow { display:flex; align-items:center; gap:5px; margin:12px 0 0; color:#50614b; font-size:10px; font-weight:800; white-space:nowrap; } .sensing-flow span { padding:4px 6px; border-radius:6px; background:#dfe8d6; } .sensing-flow span:last-child { background:#f3e2bd; color:#725e35; } .sensing-flow i { color:#9a9b8c; font-style:normal; } .ndvi-result { min-height:16px; margin:7px 0 0; color:#416a56; font-size:11px; font-weight:800; } .ndvi-result.error { color:#a34c40; } .satellite-note { margin:8px 0 0; color:#62645d; font-size:10px; line-height:1.35; }
+      .estimate-card { margin-top:16px; padding:17px 16px 15px; border:1px solid #eadfc7; border-radius:18px; background:#fffdfa; box-shadow:0 4px 7px #40392822; } .estimate-head { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; } .estimate-head h2 { margin:0; font-size:20px; } .estimate-tag { padding:4px 7px; border-radius:99px; background:#f4d9cc; color:#8b4134; font-size:11px; font-weight:800; white-space:nowrap; } .estimate-copy { margin:4px 0 13px; color:#5b5d55; font-size:12px; line-height:1.35; }
+      .calc-controls { display:grid; grid-template-columns:1fr 1fr; gap:9px; } .calc-control { display:grid; gap:5px; color:#4d5049; font-size:12px; font-weight:800; } .calc-control select,.calc-control input { width:100%; height:39px; padding:0 9px; border:1px solid #d9d1c2; border-radius:9px; background:#fff; color:#252821; font-size:14px; font-weight:700; } .calc-control input { appearance:textfield; }
+      .emissions { display:grid; grid-template-columns:1fr auto; align-items:center; gap:8px; margin-top:15px; padding:13px 14px; border-radius:13px; background:#4b7e68; color:#fff; } .emissions span { font-size:13px; font-weight:700; } .emissions small { display:block; margin-top:2px; color:#e5efe3; font-size:11px; font-weight:500; } .emissions strong { font-size:29px; line-height:1; white-space:nowrap; }
+      .comparison { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:11px; } .comparison div { padding:9px 10px; border-radius:10px; background:#f7f0e3; } .comparison small { display:block; color:#625e54; font-size:11px; font-weight:700; } .comparison b { display:block; margin-top:2px; font-size:16px; } .method-note { margin:13px 1px 0; color:#68685f; font-size:11px; line-height:1.45; } .method-note b { color:#42483f; }
+
+      /* Market */
+      .market-banner { min-height:112px; display:flex; align-items:center; gap:18px; padding:12px 25px; background:#fbf5cd; } .market-banner h1 { margin:0; font:700 50px Georgia,serif; } .market-content { padding:21px 27px; overflow:hidden; } .credit-summary { display:grid; grid-template-columns:minmax(0,1fr) clamp(84px,24vw,105px); gap:clamp(12px,5vw,24px); } .credit-card { min-width:0; min-height:212px; padding:23px clamp(18px,7vw,36px); border-radius:29px; background:#f8ead1; box-shadow:0 5px 5px #38372a2f; } .credit-card h2 { margin:0; padding-bottom:9px; border-bottom:2px solid #5b554a; font-size:clamp(18px,5.3vw,23px); letter-spacing:-.25px; white-space:nowrap; } .credit-number { min-width:0; height:103px; display:flex; align-items:center; justify-content:center; gap:clamp(4px,1.6vw,8px); margin-top:32px; padding:0 8px; border-radius:10px; background:var(--green); color:white; text-shadow:1px 2px #333; white-space:nowrap; } .credit-number strong { font-size:clamp(39px,12vw,47px); line-height:1; } .credit-number span { font-size:clamp(18px,6vw,25px); font-weight:800; } .market-actions { display:grid; gap:clamp(14px,7vw,34px); padding:6px 0; } .market-actions button { min-width:0; display:grid; place-items:center; gap:1px; overflow:hidden; border-radius:10px; background:#dfb248; font-size:clamp(18px,5vw,22px); font-weight:800; box-shadow:0 4px 5px #38372a32; } .market-actions img { width:28px; } .buyers-title { margin:30px 0 16px; font-size:23px; } .buyer { margin:0 0 22px; padding:20px 14px 13px; border:0; border-radius:24px; background:#fde8ca; box-shadow:0 5px 5px #38372a2f; } .buyer-top { display:grid; grid-template-columns:34px minmax(0,1fr) clamp(100px,25vw,118px); gap:9px; align-items:center; } .buyer-top img { width:34px; max-height:34px; object-fit:contain; } .buyer h3 { min-width:0; margin:0; overflow:hidden; font-size:clamp(22px,6.2vw,27px); line-height:1; white-space:nowrap; text-overflow:ellipsis; } .buyer h3 small { display:block; margin-top:6px; overflow:hidden; font-size:14px; font-weight:400; text-overflow:ellipsis; white-space:nowrap; } .sell { min-width:0; height:54px; border-radius:10px; background:#b38c4a; box-shadow:0 4px 4px #5a452633; font-size:21px; font-weight:800; } .buyer-bottom { display:flex; align-items:center; justify-content:space-between; gap:8px; margin:15px 0 0; padding-top:11px; border-top:1px solid #dbc9aa; color:#302b24; font-size:14px; } .buyer-minimum { display:flex; align-items:center; gap:8px; min-width:0; } .buyer-minimum img { width:28px; height:28px; }
+      /* Logistics */
+      .logistics-content { padding:18px 20px 23px; } .logistics-intro { margin:0 0 12px; font-size:18px; font-weight:800; } .logistics-intro small { display:block; margin-top:2px; color:#666a60; font-size:12px; font-weight:500; } .logistics-map-card { overflow:hidden; border:2px solid #354034; border-radius:18px; background:#d9e1d3; box-shadow:0 4px 7px #40392824; } #logistics-map { height:212px; width:100%; } .logistics-map-caption { display:flex; justify-content:space-between; gap:8px; padding:8px 10px; background:#edf1df; color:#536450; font-size:11px; font-weight:800; } .logistics-map-caption span:last-child { color:#75633d; text-align:right; } .logistics-location-list { display:grid; gap:11px; margin-top:15px; } .logistics-location { width:100%; display:grid; grid-template-columns:38px minmax(0,1fr) auto; gap:10px; align-items:center; padding:13px 12px; border-radius:15px; background:#fde8ca; box-shadow:0 4px 6px #40392828; text-align:left; } .logistics-location:focus-visible { outline:3px solid #b8cfad; } .logistics-location-icon { width:38px; height:38px; display:grid; place-items:center; border-radius:10px; background:#f8f7ed; } .logistics-location-icon img { width:28px; height:28px; object-fit:contain; } .logistics-location-info { min-width:0; } .logistics-location strong { display:block; overflow:hidden; font-size:17px; line-height:1.1; text-overflow:ellipsis; white-space:nowrap; } .logistics-location small { display:block; margin-top:4px; overflow:hidden; color:#666056; font-size:11px; text-overflow:ellipsis; white-space:nowrap; } .logistics-status { min-width:58px; padding:6px 7px; border-radius:8px; font-size:11px; font-weight:800; text-align:center; white-space:nowrap; } .logistics-status.receiving { background:#d9eed5; color:#3d7047; } .logistics-status.waiting { background:#f7dfbb; color:#8a5b2d; } .logistics-status.complete { background:#ead6d7; color:#864046; } .logistics-pin { width:31px; height:31px; display:grid; place-items:center; border:3px solid #fffdf2; border-radius:50% 50% 50% 0; box-shadow:0 2px 5px #33241766; color:#fff; font:700 14px Georgia,serif; transform:rotate(-45deg); } .logistics-pin span { transform:rotate(45deg); } .logistics-pin.receiving { background:#4b7e68; } .logistics-pin.waiting { background:#bd8b41; } .logistics-pin.complete { background:#8b4d4e; }
+      @media (max-width:430px) { body { display:block; } .phone { width:100vw; min-height:640px; height:100vh; border-radius:0; box-shadow:none; } .status { height:63px; padding:0 23px 13px; } .page-header { min-height:70px; padding:7px 20px; } .page-header h1 { font-size:32px; } .brand-logo { width:51px; height:51px; } .form { padding:0 24px 26px; } .home-content,.inform-content,.market-content { padding-left:20px; padding-right:20px; } .hero { height:122px; } .route-map { margin-left:20px; margin-right:20px; } .pickup { padding-left:20px; padding-right:20px; } .gps-banner { padding-left:20px; padding-right:20px; } .market-banner { padding-left:20px; } }
+      @media (max-width:360px) { .nav { padding-left:10px; padding-right:10px; } .nav button { width:86px; } .market-content { padding-left:13px; padding-right:13px; } .credit-summary { grid-template-columns:1fr 84px; gap:12px; } .credit-card { padding:17px 20px; min-height:184px; } .credit-card h2 { font-size:19px; } .credit-number { height:84px; margin-top:21px; padding:0 5px; } .credit-number strong { font-size:39px; } .credit-number span { font-size:19px; } .market-actions { gap:18px; } .market-actions button { font-size:18px; } .buyer { padding:15px 11px 10px; border-radius:19px; } .buyer-top { grid-template-columns:29px minmax(0,1fr) 88px; gap:7px; } .buyer-top img { width:27px; max-height:27px; } .buyer h3 { font-size:20px; } .buyer h3 small { font-size:12px; } .sell { height:50px; font-size:18px; } .buyer-bottom { margin-top:10px; font-size:11px; } .buyer-minimum { gap:5px; } .buyer-minimum img { width:22px; height:22px; } }
+
+      /* Rounded Thai text keeps the agricultural dashboard friendly and easy to scan. */
+      body,.leaflet-container,.chat-compose input { font-family:var(--font-thai); }
+      .greeting h2,.overview h3,.expert-intro h2,.expert-topic-label,.plan-section-title h3,.plan-recommendation h3,.plan-step-card b,.logistics-intro,.credit-card h2,.buyers-title,.report-title { font-family:var(--font-display); font-weight:600; }
+      .overview h3 { font-size:21px; line-height:1.2; }
+      .expert-intro h2 { font-size:20px; line-height:1.15; }
+      .expert-topic-label { font-size:17px; line-height:1.2; }
+      .plan-lead h2 { font:600 28px var(--font-display); }
+      .plan-section-title h3 { font-size:21px; }
+      .plan-step-card b { font-size:15px; }
+      .plan-recommendation h3 { font-size:18px; }
+      .report-title { font-size:34px; line-height:1.15; letter-spacing:-.2px; }
+      .credit-chart .axis-label,.credit-chart .year,.credit-chart .bar-value,.credit-chart .total-value { font-family:var(--font-thai); }
+    </style>
+  </head>
+  <body>
+    <main class="phone" aria-label="FANG FOR FUTURE application prototype">
+      <section id="register" class="page register active">
+        <div class="status"><span>03:33</span><div class="status-icons"><img src="icons/ion_cellular.png" alt=""/><img src="icons/material-symbols_wifi.png" alt=""/><img src="icons/famicons_battery-full-outline.png" alt=""/></div></div>
+        <header class="register-head"><h1>Register</h1></header>
+        <form class="form" onsubmit="event.preventDefault(); showPage('home')">
+          <h2>ข้อมูลส่วนตัว</h2>
+          <div class="form-row"><span class="field-wrap has-icon"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAAARBJREFUeAHtlN0NgjAUhS+FARjBEXAD3cAN1EdCSHQCcQI1hPCobqAbsIGO4AgOwI/nPpAQxF60vpj4JaRpbntOensK0R8Bq8+iNE0HRVHsq6ryLMty8Z2UUkvf92/GBiye5/mFhVulu23bQ8lEkUBZlpsOccblU0n7RQO0ZaIpe2RqAO6amktfMLhqamcyNcBFzqnjFGgdX/JC2i8acEo4LRzNWhhD5jjOsE9Mf5/OhxbH8QgtWdUvl2QyrDsGQXAQDZIkYeGIPgAmEUzWLw0gPoO4+Dp1YP84DMOsnqtWcUqGcGub83ZMR2SOpzPQ/RY+ot2iHRkCjWNz/pQiRHSLYdoznk1hPv0OFxzRn3d4AElOY5LLmNL8AAAAAElFTkSuQmCC" alt=""/><input class="field" placeholder="ชื่อภาษาไทย*"/></span><input class="field" placeholder="นามสกุลภาษาไทย*"/></div>
+          <input class="field" placeholder="เบอร์โทรศัพท์มือถือ*"/><input class="field" placeholder="รหัสผ่าน*"/>
+          <a class="login-link" href="#home" onclick="showPage('home')">มีบัญชีอยู่แล้ว?</a>
+          <span class="field-wrap has-icon"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAAAKdJREFUeAHtldsNhSAMhlvCAGeEs5kLEBI30A0MYQE3cwQnACXhQSteEI2X+CUEKIWW/iEAPB2kBillZoyp+uEPIkDEpm+FUqoe2hl1tNYWsYf7fX+f2AgecnS91hohAiGEDSXG4GROD8DnFvyVk7m2RE7oodhr8+gARzCJnlp7eqNPg1X40iLVY48+99YgOcARXPIOWtiJ+9WojQWc8pDjBlxiJbyODrgHScECwonmAAAAAElFTkSuQmCC" alt=""/><input class="field" placeholder="เลขบัญชี*"/></span><div class="select"><input class="field" placeholder="ธนาคาร*" readonly/></div><div class="select"><span class="field-wrap has-icon"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAAAbJJREFUeAG1VctxwjAQlT8FKB2YDpwLZ6eCkApCrgwHUwHJMaeYgeEK6YBUEHLl4qSCOBXEZ48/eWsjxvFYkoFhZ3a0knafVm+1NmMXEkO1ORqNXNM0p4ZhuGKtKIoYQ5zn+WS5XH4eDez7vpOmaQiTgr8IrLZ9C3Vs2+4FQRC3xdsyYIA6GDiCHxAcNQ5dY/8b6mG6aYs3ZcC4vkNjE7S+Bh8ujW8ujMdjj0DBJV13AH2SxE4pW/i+wTdaLBbbVmDiNMuydzg57ATBAZFlWTfiNgcqADo9FZSEYsH5SszN2sZQE7tlkkLVxP0HTDRoAmZ4HXfQCZNzTsIFlqkBJO7WKIwPqgZQD/Yj02cuf8dCQNEPsuDg74UywquJcFiMdWVcl4zvywzQZWjja5jDDvXQAwOEsl3Rq8FzckHFkFWFVIqWClYVLgD4L01Aywb2B0yPnZMxqz44JRXQK7IFPV2AY4WPCxrCJEk4lLoz1DRSiXVoaVSbrsp1ASofauv5fN6rZ0wyY2rhTH0wFfpV2JYwdrvdtt/vG/vPpRKgReg2z/vmKaX1D0INcQR4LPuLXET+AMaJw+EjLJyeAAAAAElFTkSuQmCC" alt=""/><input class="field" placeholder="รายได้ต่อเดือน*" readonly/></span></div>
+          <div class="form-row"><span class="field-wrap has-icon"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAAAfRJREFUeAHFVTluAjEUNavShdwAbgAFEiWcIOIEoWZRpkyHcgJAINrADeAETDpEw5TpmDJdSJeCJe8hm3g8JjhVvmSNl//f3/8I4Uie5+W4XPmTLkztdru72+02WB/cu8gkrjHAyjxB9bvD4VAaj8fBn4El2Au2VSwCFCNCiUR4PB7z/KZSqVq/3w9NDGsoNFBhgpIIqr6SVzgBw5K8cTVIp9N3WAXujTdrQtO2S8RwAPCeVBIOh0NPPm2xPCTwQQOcC1eLM5nMTILQ3dDCEiil8GLiDLzf77uaRUUmU73JfVEqvRhjayjET+JIOShatFqtgVT6KKJxdY8xLJni09XOeRVz7E32VxtGSm3YrpVK5Wa5XH6tViu/XC5/JpPJdwDG6hjE5L7hOx+NRk9KnrKK4dwgzWazCKA1E4Kjj8J/ZuFTQHbeyWW9KVAdVZzv4UVDvtegyCffOXnZbDZUbpORYJ1OpweALTJfwhMrZYYY1wnKN5wX4PWUUvAFMYtJsGBtcduHFTUHvgB8JXUwy81W7FVp3YnkPtbmCEmkI2NDCIIbNQt0ku0szEknQdmdhQi/ycTEsG5NcAB6ALi1gVImdi8sxO4yweWoZJvrYQjgSd02Nn8d9AhLA2AcOFXjyYeiKdyfXJK9+gdRpM2LLUtQ/Bd9A4oG/QQbmp30AAAAAElFTkSuQmCC" alt=""/><input class="field" placeholder="ปริมาณฟางข้าวต่อปี (ตัน)*"/></span><div class="select"><input class="field" placeholder="ประเภทข้าว" readonly/></div></div>
+          <h2 class="land">โฉนดที่ดิน</h2><div class="upload">อัปโหลดไฟล์โฉนดที่ดิน<img src="icons/ep_upload-filled.png" alt="อัปโหลดไฟล์"/>รองรับไฟล์ JPG, PNG ขนาดไม่เกิน 10MB</div><button class="submit">ยืนยัน</button>
+        </form>
+      </section>
+
+      <section id="home" class="page">
+        <div class="status"><span>03:33</span><div class="status-icons"><img src="icons/ion_cellular.png" alt=""/><img src="icons/material-symbols_wifi.png" alt=""/><img src="icons/famicons_battery-full-outline.png" alt=""/></div></div>
+        <header class="page-header"><img class="brand-logo" src="icons/fang-logo.png" alt="FANG FOR FUTURE"/><h1>Home</h1><button class="menu" aria-label="เมนู"><span></span><span></span><span></span></button></header>
+        <div class="hero"><img src="icons/farm-banner.png" alt="ฟาร์มและรถขนฟาง"/></div>
+        <div class="home-content"><div class="greeting"><div><h2>สวัสดี คุณสมชาย</h2><p>จัดการฟางข้าวของคุณ</p></div></div>
+          <div class="quick-grid"><button class="quick" onclick="showPage('expert')"><img src="icons/octicon_dependabot-16.png" alt="ผู้เชี่ยวชาญ"/><span>ผู้เชี่ยวชาญ</span></button><button class="quick" onclick="showPage('gps')"><img src="icons/lets-icons_map-duotone.png" alt="โลจิสติกส์"/><span>โลจิสติกส์</span></button><button class="quick" onclick="showPage('plan')"><img src="icons/solar_graph-bold.png" alt="แผนพัฒนา"/><span>แผนพัฒนา</span></button><button class="quick"><img src="icons/material-symbols_deployed-code-history.png" alt="ประวัติ"/><span>ประวัติ</span></button></div>
+          <section class="overview" aria-labelledby="credit-title">
+            <div class="overview-head"><div><p class="overview-kicker">FANG IMPACT RECORD</p><h3 id="credit-title">ประมาณการคาร์บอนสะสม</h3></div><small>3 ฤดูกาล</small></div>
+            <div class="credit-summary"><div><span>ลดการปล่อยสะสม</span><strong>9.4 <em>tCO2e</em></strong></div><div class="credit-growth"><b>+43%</b>เทียบปี 2568</div></div>
+            <div class="credit-legend" aria-label="คำอธิบายกราฟ"><span><i></i>ลดการปล่อยรายปี</span><span><i class="line"></i>ยอดสะสมโดยประมาณ</span></div>
+            <svg class="credit-chart" viewBox="0 0 360 168" role="img" aria-labelledby="credit-chart-title credit-chart-desc">
+              <title id="credit-chart-title">กราฟลดการปล่อยและยอดสะสม 3 ฤดูกาล</title><desc id="credit-chart-desc">ปี 2567 ลดการปล่อย 2.1 tCO2e, ปี 2568 3.0 tCO2e และปี 2569 4.3 tCO2e รวม 9.4 tCO2e</desc>
+              <line class="grid" x1="38" y1="25" x2="348" y2="25"/><line class="grid" x1="38" y1="72" x2="348" y2="72"/><line class="grid" x1="38" y1="119" x2="348" y2="119"/><line class="grid" x1="38" y1="145" x2="348" y2="145"/>
+              <text class="axis-label" x="8" y="28">5.0</text><text class="axis-label" x="8" y="75">3.5</text><text class="axis-label" x="8" y="122">2.0</text><text class="axis-label" x="18" y="148">0</text>
+              <rect x="75" y="106" width="42" height="39" rx="5" fill="#ded4b9"/><rect x="177" y="89" width="42" height="56" rx="5" fill="#c9bc94"/><rect x="279" y="65" width="42" height="80" rx="5" fill="#9ca77e"/>
+              <text class="bar-value" x="96" y="99" text-anchor="middle">2.1</text><text class="bar-value" x="198" y="82" text-anchor="middle">3.0</text><text class="bar-value" x="300" y="58" text-anchor="middle">4.3</text>
+              <polyline points="96,116 198,93 300,54" fill="none" stroke="#4d725e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="96" cy="116" r="4" fill="#4d725e"/><circle cx="198" cy="93" r="4" fill="#4d725e"/><circle cx="300" cy="54" r="4" fill="#4d725e"/><rect x="307" y="38" width="38" height="18" rx="9" fill="#e1ebd9"/><text class="total-value" x="326" y="50" text-anchor="middle">9.4</text>
+              <text class="year" x="96" y="162" text-anchor="middle">2567</text><text class="year" x="198" y="162" text-anchor="middle">2568</text><text class="year" x="300" y="162" text-anchor="middle">2569</text>
+            </svg>
+            <p class="credit-note">บันทึกจากการจัดการฟางของแปลงสาธิต 12 ไร่ เป็นค่าประเมินภายในเพื่อใช้ติดตามผล ไม่ใช่คาร์บอนเครดิตที่ผ่านการรับรอง</p>
+          </section>
+        </div>
+      </section>
+
+      <section id="expert" class="page">
+        <div class="status"><span>03:33</span><div class="status-icons"><img src="icons/ion_cellular.png" alt=""/><img src="icons/material-symbols_wifi.png" alt=""/><img src="icons/famicons_battery-full-outline.png" alt=""/></div></div>
+        <header class="page-header expert-header"><img class="brand-logo" src="icons/fang-logo.png" alt="FANG FOR FUTURE"/><h1>ผู้เชี่ยวชาญ</h1></header>
+        <div class="expert-content"><section class="expert-intro"><img src="icons/octicon_dependabot-16.png" alt="ผู้ช่วย AI"/><div><p class="expert-eyebrow">FANG AI ASSISTANT</p><h2>ผู้ช่วยจัดการฟางข้าว</h2><p>ถามเรื่องเก็บ อัดก้อน ดูแลฟาง หรือนัดจุดรับฟางได้เลย</p></div></section><p class="expert-topic-label">เริ่มจากเรื่องที่อยากรู้</p><div class="expert-topics" aria-label="คำถามแนะนำ"><button class="expert-topic" type="button" data-expert-question="ควรอัดฟางเมื่อไร?">ควรอัดฟางเมื่อไร?</button><button class="expert-topic" type="button" data-expert-question="เก็บฟางอย่างไรไม่ให้ชื้น?">เก็บฟางอย่างไรไม่ให้ชื้น?</button><button class="expert-topic" type="button" data-expert-question="โรงสีใกล้ฉันอยู่ที่ไหน?">โรงสีใกล้ฉันอยู่ที่ไหน?</button><button class="expert-topic" type="button" data-expert-question="ฟางเหลือควรทำอะไรดี?">ฟางเหลือควรทำอะไรดี?</button></div><section class="chat-panel" aria-label="แชตผู้เชี่ยวชาญ"><div class="chat-panel-head"><b>คุยกับผู้ช่วย</b><span id="expert-status">พร้อมช่วยเหลือ</span></div><div class="chat-thread" id="expert-chat" aria-live="polite"><div class="chat-message">สวัสดีคุณสมชายค่ะ ตอนนี้แปลงตัวอย่างเข้าสู่ช่วงเก็บเกี่ยวแล้ว อยากวางแผนอัดฟาง ส่งโรงสี หรือเก็บคืนแปลงก่อนดีคะ?</div></div><form class="chat-compose" id="expert-form"><input id="expert-input" type="text" maxlength="240" autocomplete="off" placeholder="พิมพ์คำถามเรื่องฟางข้าว..." aria-label="พิมพ์คำถามเรื่องฟางข้าว"/><button type="submit" id="expert-send">ส่ง</button></form></section></div>
+      </section>
+
+      <section id="plan" class="page">
+        <div class="status"><span>03:33</span><div class="status-icons"><img src="icons/ion_cellular.png" alt=""/><img src="icons/material-symbols_wifi.png" alt=""/><img src="icons/famicons_battery-full-outline.png" alt=""/></div></div>
+        <header class="page-header plan-header"><img class="brand-logo" src="icons/fang-logo.png" alt="FANG FOR FUTURE"/><h1>แผนพัฒนา</h1></header>
+        <div class="plan-content"><section class="plan-lead"><p class="plan-overline">SEASON PLAN · 2569</p><h2>นาปีแปลงคุณสมชาย</h2><p>แปลงสาธิต จ.สุพรรณบุรี · 12 ไร่</p><span class="plan-stage">กำลังเตรียมเก็บเกี่ยว</span></section><section class="plan-metrics" aria-label="ข้อมูลประมาณการฤดูกาล"><article class="plan-metric"><small>พื้นที่</small><b>12 ไร่</b></article><article class="plan-metric"><small>ฟางคาดการณ์</small><b>9 ตัน</b></article><article class="plan-metric"><small>ส่งขาย</small><b>6.3 ตัน</b></article></section><div class="plan-section-title"><h3>แผนงานฤดูกาลนี้</h3><small>ตั้งต้นจากนาปี 120 วัน</small></div><section class="plan-timeline" aria-label="ไทม์ไลน์ฤดูปลูก"><article class="plan-step"><span class="plan-step-mark">1</span><div class="plan-step-card"><b>10 ก.ค. · ปลูกและตั้งตัว</b><p>หว่าน/ปักดำเสร็จแล้ว ติดตามระดับน้ำและบันทึกกิจกรรมแปลง</p><small>เสร็จสิ้น</small></div></article><article class="plan-step"><span class="plan-step-mark">2</span><div class="plan-step-card"><b>ส.ค.–ก.ย. · แตกกอและดูแลน้ำ</b><p>ตรวจความสม่ำเสมอของแปลง ลดน้ำขังเกินจำเป็น และติดตามศัตรูพืช</p><small>เสร็จสิ้น</small></div></article><article class="plan-step"><span class="plan-step-mark">3</span><div class="plan-step-card"><b>20 ต.ค. · เตรียมเก็บเกี่ยว</b><p>ระบายน้ำก่อนเก็บเกี่ยว จองรถเกี่ยวและตรวจความพร้อมจุดพักฟาง</p><small>เสร็จสิ้น</small></div></article><article class="plan-step current"><span class="plan-step-mark">4</span><div class="plan-step-card"><b>5–15 พ.ย. · เก็บเกี่ยวและชั่งฟาง</b><p>เก็บเมื่อเมล็ดเหลืองเกือบทั้งรวง บันทึกน้ำหนักฟางจริงเพื่อปรับค่าคาร์บอน</p><small>กำลังดำเนินการ</small></div></article><article class="plan-step next"><span class="plan-step-mark">5</span><div class="plan-step-card"><b>หลังเก็บ 1–7 วัน · อัดก้อนและส่งมอบ</b><p>กันฟางเปียกฝน แบ่ง 70% อัดก้อนส่งขาย และกัน 30% ไว้ไถกลบ/คลุมดิน</p><small>ขั้นถัดไป</small></div></article></section><section class="plan-recommendation"><h3>คำแนะนำสำหรับรอบนี้</h3><p>เป้าหมายคือไม่เผาฟางทั้งหมด จัดรถอัดฟางหลังเก็บเกี่ยว และเก็บบันทึกน้ำหนักกับปลายทางการใช้ฟางเพื่อใช้ประเมินคาร์บอนในหน้า Inform</p></section><div class="plan-actions"><button type="button" onclick="showPage('gps')">ดูจุดรับฟาง</button><button type="button" onclick="showPage('inform')">เปิดรายงานคาร์บอน</button></div></div>
+      </section>
+
+      <section id="gps" class="page">
+        <div class="status"><span>03:33</span><div class="status-icons"><img src="icons/ion_cellular.png" alt=""/><img src="icons/material-symbols_wifi.png" alt=""/><img src="icons/famicons_battery-full-outline.png" alt=""/></div></div>
+        <header class="gps-banner"><img class="brand-logo" src="icons/fang-logo.png" alt="FANG FOR FUTURE"/><h1>โลจิสติกส์</h1></header>
+        <div class="logistics-content"><p class="logistics-intro">จุดรับฟางในสุพรรณบุรี<small>เลือกจุดรับฟางเพื่อดูตำแหน่งจริงบนแผนที่</small></p><section class="logistics-map-card" aria-label="แผนที่จุดรับฟางในสุพรรณบุรี"><div id="logistics-map"></div><div class="logistics-map-caption"><span>หมุดอ้างอิงจากตำแหน่งสถานประกอบการ</span><span>ภาพดาวเทียม</span></div></section><section class="logistics-location-list" aria-label="รายชื่อจุดรับฟาง"><button class="logistics-location" type="button" data-logistics-location="phunsin"><span class="logistics-location-icon"><img src="icons/factory-building.png" alt=""/></span><span class="logistics-location-info"><strong>โรงสีพูนสินไทย</strong><small>อู่ทอง · 1104 Nakhorn Luang Thai Alley</small></span><span class="logistics-status receiving">กำลังรับ</span></button><button class="logistics-location" type="button" data-logistics-location="phairat"><span class="logistics-location-icon"><img src="icons/factory-building.png" alt=""/></span><span class="logistics-location-info"><strong>โรงสีไพรัตน์</strong><small>ไพรัตน์ ฟางอัดก้อน · ดอนโพธิ์ทอง</small></span><span class="logistics-status waiting">รอรับ</span></button><button class="logistics-location" type="button" data-logistics-location="sap"><span class="logistics-location-icon"><img src="icons/factory-building.png" alt=""/></span><span class="logistics-location-info"><strong>โกดังฟางทรัพย์</strong><small>ทรัพย์กำไรทอง สาขา 1 · สุพรรณบุรี</small></span><span class="logistics-status complete">เสร็จสิ้น</span></button></section></div>
+      </section>
+
+      <section id="inform" class="page">
+        <div class="status"><span>03:33</span><div class="status-icons"><img src="icons/ion_cellular.png" alt=""/><img src="icons/material-symbols_wifi.png" alt=""/><img src="icons/famicons_battery-full-outline.png" alt=""/></div></div>
+        <div class="inform-content">
+          <h1 class="report-title">แปลงนาและคาร์บอน</h1><p class="report-kicker">แปลงสาธิต จ.สุพรรณบุรี</p>
+          <section class="field-map-wrap" aria-label="แผนที่ดาวเทียมสำหรับกำหนดขอบเขตแปลง"><div id="field-map"></div><div class="map-caption"><span>แตะแผนที่เพื่อเพิ่มมุมแปลง</span><span>ภาพดาวเทียม</span></div></section>
+          <div class="map-tools"><button type="button" id="sample-plot">ใช้แปลงตัวอย่าง</button><button type="button" id="clear-plot">ล้างจุด</button><button type="button" id="fit-plot">ซูมให้พอดี</button></div>
+          <section class="area-summary" aria-live="polite"><div class="area-main"><small>พื้นที่วัดได้</small><strong id="area-rai">0.00 <em>ไร่</em></strong></div><div class="area-side"><div class="metric"><small>ตารางเมตร</small><b id="area-sqm">0</b></div><div class="metric"><small>เฮกตาร์</small><b id="area-ha">0.000</b></div></div></section>
+          <section class="satellite-card" aria-live="polite"><div class="satellite-head"><div><p class="satellite-overline">REMOTE SENSING</p><h2>ข้อมูลดาวเทียมของแปลง</h2></div><button class="refresh-satellite" type="button" id="refresh-satellite">อัปเดต</button></div><p class="satellite-status" id="satellite-status">กำลังรอขอบเขตแปลง</p><div class="satellite-sources"><article class="satellite-source"><span class="satellite-badge">S2</span><div><b>Sentinel-2 L2A</b><small id="sentinel-meta">ยังไม่ได้ค้นหาภาพ</small></div></article><article class="satellite-source"><span class="satellite-badge">L8</span><div><b>Landsat Collection 2</b><small id="landsat-meta">ยังไม่ได้ค้นหาภาพ</small></div></article></div><div class="sensing-flow"><span>ขอบเขตแปลง</span><i>→</i><span>ภาพดาวเทียม</span><i>→</i><span>NDVI จาก GEE</span></div><p class="ndvi-result" id="ndvi-result">NDVI จะคำนวณหลังเลือกขอบเขตแปลง</p><p class="satellite-note">NDVI เฉลี่ยคำนวณจาก Sentinel-2 SR Harmonized ผ่าน Google Earth Engine ที่ความละเอียด 10 ม. เป็นข้อมูลประกอบการประเมิน ไม่ใช่การรับรองคาร์บอนเครดิต</p></section>
+          <section class="estimate-card"><div class="estimate-head"><h2>ประเมินการปล่อยมีเทน</h2><span class="estimate-tag">ค่าประมาณ</span></div><p class="estimate-copy">ใช้พื้นที่ที่วัดได้ร่วมกับฤดูปลูกและการจัดการน้ำ เพื่อประมาณการปล่อย CH₄ ของแปลงนี้</p><div class="calc-controls"><label class="calc-control">วันปลูกข้าว<input id="crop-days" type="number" min="1" max="365" value="120" inputmode="numeric"/></label><label class="calc-control">การจัดการน้ำ<select id="water-method"><option value="1">ขังน้ำต่อเนื่อง</option><option value="0.55">เปียกสลับแห้ง (AWD)</option></select></label></div><div class="emissions"><span>การปล่อยโดยประมาณ<small id="emission-detail">จากพื้นที่ที่วัดได้</small></span><strong id="emission-total">0.00 tCO2e</strong></div><div class="comparison"><div><small>มีเทน</small><b id="methane-total">0.0 kg CH4</b></div><div><small id="comparison-label">เทียบขังน้ำต่อเนื่อง</small><b id="reduction-total">0% ลดลง</b></div></div><p class="method-note"><b>สูตรสาธิต:</b> พื้นที่ (ha) × วันปลูก × 1.19 kg CH₄/ha/day × ปัจจัยน้ำ × GWP 28. ผลลัพธ์นี้เป็นบัญชีการปล่อยเบื้องต้น ไม่ใช่เครดิตที่รับรองแล้ว</p></section>
+        </div>
+      </section>
+
+      <section id="market" class="page">
+        <div class="status"><span>03:33</span><div class="status-icons"><img src="icons/ion_cellular.png" alt=""/><img src="icons/material-symbols_wifi.png" alt=""/><img src="icons/famicons_battery-full-outline.png" alt=""/></div></div>
+        <header class="market-banner"><img class="brand-logo" src="icons/fang-logo.png" alt="FANG FOR FUTURE"/><h1>Market</h1></header>
+        <div class="market-content"><section class="credit-summary"><div class="credit-card"><h2>เครดิตสะสมทั้งหมด</h2><div class="credit-number"><strong>500</strong><span>เครดิต</span></div></div><div class="market-actions"><button>ประวัติ<img src="icons/mdi_book-time.png" alt=""/></button><button>รายได้<img src="icons/ri_hand-coin-fill.png" alt=""/></button></div></section><h2 class="buyers-title">เลือกบริษัทคู่ซื้อเครดิต</h2><article class="buyer"><div class="buyer-top"><img src="icons/factory-symbol.png" alt=""/><h3>Energy next<small>บริษัทพลังงาน</small></h3><button class="sell">ขาย</button></div><div class="buyer-bottom"><span class="buyer-minimum"><img src="icons/coin.png" alt="เหรียญ"/>เงื่อนไขขั้นต่ำ 10 เครดิต</span><span>10 Credit / 100 Baht</span></div></article><article class="buyer"><div class="buyer-top"><img src="icons/factory-building.png" alt=""/><h3>A factory<small>โรงงาน</small></h3><button class="sell">ขาย</button></div><div class="buyer-bottom"><span class="buyer-minimum"><img src="icons/coin.png" alt="เหรียญ"/>เงื่อนไขขั้นต่ำ 5 เครดิต</span><span>5 Credit / 120 Baht</span></div></article><article class="buyer"><div class="buyer-top"><img src="icons/material-symbols_electric-bolt.png" alt=""/><h3>Fast elec<small>โรงงานไฟฟ้า</small></h3><button class="sell">ขาย</button></div><div class="buyer-bottom"><span class="buyer-minimum"><img src="icons/coin.png" alt="เหรียญ"/>เงื่อนไขขั้นต่ำ 5 เครดิต</span><span>5 Credit / 100 Baht</span></div></article>
+        </div>
+      </section>
+
+      <nav class="nav hidden" aria-label="เมนูหลัก"><button id="nav-primary" data-page="inform" onclick="showPage(this.dataset.page)"><img id="nav-primary-icon" src="icons/solar_graph-bold.png" alt=""/><span id="nav-primary-label">Inform</span></button><button data-page="home" onclick="showPage('home')"><span class="nav-icon-stack" aria-hidden="true"><img class="nav-icon-black" src="icons/home-black.png" alt=""/><img class="nav-icon-white" src="icons/home-white.png" alt=""/></span><span>Home</span></button><button data-page="market" onclick="showPage('market')"><img src="icons/market-nav.png" alt=""/><span>Market</span></button></nav>
+    </main>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+      let fieldMap;
+      let plotLayer;
+      let plotMarkers = [];
+      let plotPoints = [];
+      let lastSatellitePlotKey = '';
+      let satelliteLoading = false;
+      let logisticsMap;
+      const logisticsMarkers = new Map();
+      let expertChatReady = false;
+      let expertChatBusy = false;
+      const expertConversation = [{
+        role: 'assistant',
+        content: 'สวัสดีคุณสมชายค่ะ ตอนนี้แปลงตัวอย่างเข้าสู่ช่วงเก็บเกี่ยวแล้ว อยากวางแผนอัดฟาง ส่งโรงสี หรือเก็บคืนแปลงก่อนดีคะ?',
+      }];
+      const stacEndpoint = 'https://earth-search.aws.element84.com/v1/search';
+      const samplePlot = [
+        [14.54808, 100.09362],
+        [14.54810, 100.09445],
+        [14.54748, 100.09453],
+        [14.54743, 100.09368]
+      ];
+      const logisticsLocations = [
+        { id:'phunsin', name:'โรงสีพูนสินไทย', detail:'อู่ทอง · กำลังรับฟาง', lat:14.3740915, lng:99.9014843, state:'receiving', status:'กำลังรับ' },
+        { id:'phairat', name:'โรงสีไพรัตน์', detail:'ไพรัตน์ ฟางอัดก้อน · รอคิวรับ', lat:14.4165379, lng:100.04988, state:'waiting', status:'รอรับ' },
+        { id:'sap', name:'โกดังฟางทรัพย์', detail:'ทรัพย์กำไรทอง สาขา 1 · ปิดรอบวันนี้', lat:14.5043482, lng:99.9747323, state:'complete', status:'เสร็จสิ้น' }
+      ];
+
+      function squareMetersFromLatLngs(points) {
+        if (points.length < 3) return 0;
+        const radius = 6378137;
+        const radians = Math.PI / 180;
+        const meanLatitude = points.reduce((total, point) => total + point[0], 0) / points.length * radians;
+        const projected = points.map(([lat, lng]) => [radius * lng * radians * Math.cos(meanLatitude), radius * lat * radians]);
+        let twiceArea = 0;
+        projected.forEach((point, index) => {
+          const next = projected[(index + 1) % projected.length];
+          twiceArea += point[0] * next[1] - next[0] * point[1];
+        });
+        return Math.abs(twiceArea) / 2;
+      }
+
+      function currentPlotKey() {
+        return plotPoints.map(([lat, lng]) => `${lat.toFixed(5)},${lng.toFixed(5)}`).join('|');
+      }
+
+      function plotBounds() {
+        const latitudes = plotPoints.map(([lat]) => lat);
+        const longitudes = plotPoints.map(([, lng]) => lng);
+        return [Math.min(...longitudes), Math.min(...latitudes), Math.max(...longitudes), Math.max(...latitudes)];
+      }
+
+      function setSatelliteStatus(message, state = '') {
+        const status = document.querySelector('#satellite-status');
+        if (!status) return;
+        status.textContent = message;
+        status.className = `satellite-status ${state}`;
+      }
+
+      function setSatelliteStale() {
+        if (satelliteLoading) return;
+        if (plotPoints.length < 3) {
+          setSatelliteStatus('เพิ่มอย่างน้อย 3 จุดเพื่อค้นหาภาพดาวเทียม');
+          return;
+        }
+        if (lastSatellitePlotKey !== currentPlotKey()) setSatelliteStatus('ขอบเขตเปลี่ยนแล้ว กดอัปเดตเพื่อค้นหาภาพล่าสุด');
+      }
+
+      function formatScene(item, emptyText) {
+        if (!item) return emptyText;
+        const properties = item.properties || {};
+        const acquiredAt = properties.datetime || properties.created;
+        const formattedDate = acquiredAt ? new Intl.DateTimeFormat('th-TH', { day:'numeric', month:'short', year:'numeric' }).format(new Date(acquiredAt)) : 'ไม่ระบุวันถ่าย';
+        const cloud = Number(properties['eo:cloud_cover']);
+        return Number.isFinite(cloud) ? `${formattedDate} · เมฆ ${cloud.toFixed(1)}%` : formattedDate;
+      }
+
+      async function findSatelliteScene(collection, bbox) {
+        const end = new Date();
+        const start = new Date(end);
+        start.setFullYear(start.getFullYear() - 1);
+        const response = await fetch(stacEndpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            collections: [collection],
+            bbox,
+            datetime: `${start.toISOString()}/${end.toISOString()}`,
+            query: { 'eo:cloud_cover': { lt: 30 } },
+            limit: 1
+          })
+        });
+        if (!response.ok) throw new Error(`STAC ${response.status}`);
+        const data = await response.json();
+        return data.features && data.features[0] ? data.features[0] : null;
+      }
+
+      function describeNdvi(value) {
+        if (value >= 0.65) return 'พืชพรรณหนาแน่น';
+        if (value >= 0.35) return 'พืชพรรณปานกลาง';
+        if (value >= 0.15) return 'พืชพรรณเบาบาง';
+        return 'พื้นที่โล่งหรือน้ำ';
+      }
+
+      async function fetchNdvi(points) {
+        const response = await fetch('/api/ndvi', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ points })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.message || `GEE ${response.status}`);
+        return data;
+      }
+
+      async function refreshSatelliteData() {
+        if (plotPoints.length < 3) {
+          setSatelliteStale();
+          return;
+        }
+        const refreshButton = document.querySelector('#refresh-satellite');
+        const requestKey = currentPlotKey();
+        satelliteLoading = true;
+        refreshButton.disabled = true;
+        refreshButton.textContent = 'กำลังค้นหา';
+        setSatelliteStatus('กำลังค้นหาภาพและคำนวณ NDVI ของแปลง');
+        document.querySelector('#ndvi-result').className = 'ndvi-result';
+        document.querySelector('#ndvi-result').textContent = 'กำลังคำนวณ NDVI เฉลี่ยจาก Google Earth Engine';
+        const results = await Promise.allSettled([
+          findSatelliteScene('sentinel-2-l2a', plotBounds()),
+          findSatelliteScene('landsat-c2-l2', plotBounds()),
+          fetchNdvi(plotPoints)
+        ]);
+        satelliteLoading = false;
+        refreshButton.disabled = false;
+        refreshButton.textContent = 'อัปเดต';
+        if (requestKey !== currentPlotKey()) {
+          setSatelliteStale();
+          return;
+        }
+        const sentinel = results[0].status === 'fulfilled' ? results[0].value : null;
+        const landsat = results[1].status === 'fulfilled' ? results[1].value : null;
+        const ndvi = results[2].status === 'fulfilled' ? results[2].value : null;
+        const ndviError = results[2].status === 'rejected' ? results[2].reason : null;
+        document.querySelector('#sentinel-meta').textContent = formatScene(sentinel, 'ไม่พบภาพเมฆน้อยในช่วง 12 เดือน');
+        document.querySelector('#landsat-meta').textContent = formatScene(landsat, 'ไม่พบภาพเมฆน้อยในช่วง 12 เดือน');
+        const ndviResult = document.querySelector('#ndvi-result');
+        if (ndvi && Number.isFinite(Number(ndvi.ndvi))) {
+          const value = Number(ndvi.ndvi);
+          ndviResult.className = 'ndvi-result';
+          ndviResult.textContent = `NDVI เฉลี่ย ${value.toFixed(3)} · ${describeNdvi(value)} · GEE Sentinel-2 (10 ม.)`;
+        } else {
+          ndviResult.className = 'ndvi-result error';
+          ndviResult.textContent = ndviError && ndviError.message
+            ? ndviError.message
+            : 'ยังคำนวณ NDVI ไม่สำเร็จ ลองกดอัปเดตอีกครั้ง';
+        }
+        lastSatellitePlotKey = requestKey;
+        if (ndvi) {
+          setSatelliteStatus('อัปเดต NDVI จาก Google Earth Engine แล้ว', 'ready');
+        } else if (sentinel || landsat) {
+          setSatelliteStatus('อัปเดตเมทาดาทาภาพแล้ว แต่ NDVI ต้องตรวจสอบเพิ่มเติม', 'error');
+        } else {
+          setSatelliteStatus('ค้นหาไม่สำเร็จ ลองกดอัปเดตอีกครั้งเมื่อมีอินเทอร์เน็ต', 'error');
+        }
+      }
+
+      function updateEstimate() {
+        const squareMeters = squareMetersFromLatLngs(plotPoints);
+        const hectares = squareMeters / 10000;
+        const rai = squareMeters / 1600;
+        const cropDays = Math.max(1, Math.min(365, Number(document.querySelector('#crop-days').value) || 0));
+        const waterFactor = Number(document.querySelector('#water-method').value);
+        const continuousMethane = hectares * cropDays * 1.19;
+        const methane = continuousMethane * waterFactor;
+        const tCO2e = methane * 28 / 1000;
+        const reduction = Math.max(0, (1 - waterFactor) * 100);
+
+        document.querySelector('#area-rai').innerHTML = `${rai.toFixed(2)} <em>ไร่</em>`;
+        document.querySelector('#area-sqm').textContent = Math.round(squareMeters).toLocaleString('th-TH');
+        document.querySelector('#area-ha').textContent = hectares.toFixed(3);
+        document.querySelector('#methane-total').textContent = `${methane.toFixed(1)} kg CH4`;
+        document.querySelector('#emission-total').textContent = `${tCO2e.toFixed(2)} tCO2e`;
+        document.querySelector('#emission-detail').textContent = `${cropDays} วัน · EF 1.19 kg CH4/ha/day`;
+        document.querySelector('#reduction-total').textContent = `${reduction.toFixed(0)}% ลดลง`;
+      }
+
+      function markerIcon(number) {
+        return L.divIcon({
+          className: '',
+          iconSize: [24, 24],
+          iconAnchor: [12, 24],
+          html: `<span class="field-marker"><span>${number}</span></span>`
+        });
+      }
+
+      function drawPlot() {
+        if (plotLayer) fieldMap.removeLayer(plotLayer);
+        plotMarkers.forEach((marker) => fieldMap.removeLayer(marker));
+        plotMarkers = [];
+        if (plotPoints.length >= 3) {
+          plotLayer = L.polygon(plotPoints, { color:'#681d1e', weight:3, fillColor:'#d7ad4a', fillOpacity:.28 }).addTo(fieldMap);
+        } else if (plotPoints.length > 1) {
+          plotLayer = L.polyline(plotPoints, { color:'#681d1e', weight:3, dashArray:'7 6' }).addTo(fieldMap);
+        } else {
+          plotLayer = null;
+        }
+        plotPoints.forEach((point, index) => {
+          const marker = L.marker(point, { icon: markerIcon(index + 1), draggable:true, keyboard:true, title:`มุมแปลง ${index + 1}` }).addTo(fieldMap);
+          marker.on('dragend', () => {
+            const position = marker.getLatLng();
+            plotPoints[index] = [position.lat, position.lng];
+            drawPlot();
+            updateEstimate();
+          });
+          plotMarkers.push(marker);
+        });
+        updateEstimate();
+        setSatelliteStale();
+      }
+
+      function useSamplePlot() {
+        plotPoints = samplePlot.map((point) => [...point]);
+        drawPlot();
+        fieldMap.fitBounds(plotLayer.getBounds(), { padding:[28, 28], maxZoom:17 });
+        refreshSatelliteData();
+      }
+
+      function initFieldMap() {
+        if (fieldMap) {
+          fieldMap.invalidateSize();
+          return;
+        }
+        const mapTarget = document.querySelector('#field-map');
+        if (!window.L) {
+          mapTarget.innerHTML = '<p style="margin:0;padding:28px 20px;color:#4b5547;font-weight:700">ไม่สามารถโหลดแผนที่ดาวเทียมได้ในขณะนี้</p>';
+          return;
+        }
+        fieldMap = L.map('field-map', { zoomControl:false, attributionControl:true }).setView([14.54775, 100.09408], 16);
+        L.control.zoom({ position:'topright' }).addTo(fieldMap);
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+          maxZoom: 19,
+          attribution: 'Tiles &copy; Esri'
+        }).addTo(fieldMap);
+        fieldMap.on('click', (event) => {
+          plotPoints.push([event.latlng.lat, event.latlng.lng]);
+          drawPlot();
+        });
+        document.querySelector('#sample-plot').addEventListener('click', useSamplePlot);
+        document.querySelector('#clear-plot').addEventListener('click', () => {
+          plotPoints = [];
+          drawPlot();
+        });
+        document.querySelector('#fit-plot').addEventListener('click', () => {
+          if (plotLayer && plotPoints.length > 1) fieldMap.fitBounds(plotLayer.getBounds(), { padding:[28, 28], maxZoom:17 });
+          else fieldMap.setView([14.54775, 100.09408], 16);
+        });
+        document.querySelector('#refresh-satellite').addEventListener('click', refreshSatelliteData);
+        document.querySelector('#crop-days').addEventListener('input', updateEstimate);
+        document.querySelector('#water-method').addEventListener('change', updateEstimate);
+        useSamplePlot();
+      }
+
+      function logisticsMarkerIcon(location, index) {
+        return L.divIcon({
+          className: '',
+          iconSize: [31, 31],
+          iconAnchor: [15, 31],
+          html: `<span class="logistics-pin ${location.state}"><span>${index + 1}</span></span>`
+        });
+      }
+
+      function focusLogisticsLocation(id) {
+        const location = logisticsLocations.find((item) => item.id === id);
+        const marker = logisticsMarkers.get(id);
+        if (!location || !marker || !logisticsMap) return;
+        logisticsMap.flyTo([location.lat, location.lng], 16, { duration:.55 });
+        marker.openPopup();
+      }
+
+      function initLogisticsMap() {
+        if (logisticsMap) {
+          logisticsMap.invalidateSize();
+          return;
+        }
+        const mapTarget = document.querySelector('#logistics-map');
+        if (!window.L) {
+          mapTarget.innerHTML = '<p style="margin:0;padding:28px 20px;color:#4b5547;font-weight:700">ไม่สามารถโหลดแผนที่ได้ในขณะนี้</p>';
+          return;
+        }
+        logisticsMap = L.map('logistics-map', { zoomControl:false, attributionControl:true }).setView([14.432, 99.975], 12);
+        L.control.zoom({ position:'topright' }).addTo(logisticsMap);
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+          maxZoom:19,
+          attribution:'Tiles &copy; Esri'
+        }).addTo(logisticsMap);
+        logisticsLocations.forEach((location, index) => {
+          const marker = L.marker([location.lat, location.lng], { icon:logisticsMarkerIcon(location, index), title:location.name }).addTo(logisticsMap);
+          marker.bindPopup(`<strong>${location.name}</strong><br><small>${location.detail}</small>`);
+          logisticsMarkers.set(location.id, marker);
+        });
+        document.querySelectorAll('[data-logistics-location]').forEach((button) => {
+          button.addEventListener('click', () => focusLogisticsLocation(button.dataset.logisticsLocation));
+        });
+      }
+
+      function appendExpertMessage(message, role = 'assistant', pending = false) {
+        const thread = document.querySelector('#expert-chat');
+        const bubble = document.createElement('div');
+        bubble.className = `chat-message ${role === 'user' ? 'user' : ''} ${pending ? 'pending' : ''}`.trim();
+        bubble.textContent = message;
+        thread.append(bubble);
+        thread.scrollTop = thread.scrollHeight;
+        return bubble;
+      }
+
+      function setExpertBusy(busy) {
+        expertChatBusy = busy;
+        const input = document.querySelector('#expert-input');
+        const send = document.querySelector('#expert-send');
+        const status = document.querySelector('#expert-status');
+        input.disabled = busy;
+        send.disabled = busy;
+        document.querySelectorAll('[data-expert-question]').forEach((button) => { button.disabled = busy; });
+        status.textContent = busy ? 'กำลังตอบ' : 'พร้อมช่วยเหลือ';
+      }
+
+      async function askExpert(question) {
+        const cleanQuestion = question.trim();
+        if (!cleanQuestion || expertChatBusy) return;
+        appendExpertMessage(cleanQuestion, 'user');
+        expertConversation.push({ role: 'user', content: cleanQuestion });
+        const waiting = appendExpertMessage('ผู้เชี่ยวชาญ AI กำลังเรียบเรียงคำตอบ...', 'assistant', true);
+        setExpertBusy(true);
+        try {
+          const response = await fetch('/api/expert-chat', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ messages: expertConversation.slice(-8) }),
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok || typeof data.message !== 'string') throw new Error(data.message || 'ผู้เชี่ยวชาญ AI ยังตอบไม่ได้ในขณะนี้');
+          waiting.remove();
+          expertConversation.push({ role: 'assistant', content: data.message });
+          appendExpertMessage(data.message);
+        } catch (error) {
+          waiting.remove();
+          appendExpertMessage(error instanceof Error ? error.message : 'ผู้เชี่ยวชาญ AI ยังตอบไม่ได้ในขณะนี้');
+        } finally {
+          setExpertBusy(false);
+          document.querySelector('#expert-input').focus();
+        }
+      }
+
+      function initExpertChat() {
+        if (expertChatReady) return;
+        expertChatReady = true;
+        document.querySelectorAll('[data-expert-question]').forEach((button) => {
+          button.addEventListener('click', () => askExpert(button.dataset.expertQuestion));
+        });
+        document.querySelector('#expert-form').addEventListener('submit', (event) => {
+          event.preventDefault();
+          const input = document.querySelector('#expert-input');
+          askExpert(input.value);
+          input.value = '';
+          input.focus();
+        });
+      }
+
+      function showPage(name) {
+        document.querySelectorAll('.page').forEach((page) => page.classList.toggle('active', page.id === name));
+        const primary = document.querySelector('#nav-primary');
+        const primaryIcon = document.querySelector('#nav-primary-icon');
+        const primaryLabel = document.querySelector('#nav-primary-label');
+        const isGps = name === 'gps';
+        primary.dataset.page = isGps ? 'gps' : 'inform';
+        primaryIcon.src = isGps ? 'icons/lets-icons_map-duotone.png' : 'icons/solar_graph-bold.png';
+        primaryLabel.textContent = isGps ? 'GPS' : 'Inform';
+        document.querySelectorAll('.nav button').forEach((button) => button.classList.toggle('active', button.dataset.page === name));
+        document.querySelector('.nav').classList.toggle('hidden', name === 'register');
+        document.getElementById(name).scrollTop = 0;
+        window.scrollTo(0, 0);
+        if (name === 'inform') {
+          initFieldMap();
+          window.setTimeout(() => fieldMap && fieldMap.invalidateSize(), 0);
+        }
+        if (name === 'gps') {
+          initLogisticsMap();
+          window.setTimeout(() => logisticsMap && logisticsMap.invalidateSize(), 0);
+        }
+        if (name === 'expert') initExpertChat();
+      }
+    </script>
+  </body>
+</html>

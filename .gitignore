@@ -1,0 +1,21 @@
+# Local secrets and credentials
+.env
+.env.*
+!.env.example
+*service-account*.json
+*credentials*.json
+*.pem
+*.key
+
+# Generated artifacts and dependencies
+dist/
+dist-before-clean-deploy/
+.site-build/
+node_modules/
+output/
+tmp/
+
+# Local / OS files
+.DS_Store
+__MACOSX/
+*.log
